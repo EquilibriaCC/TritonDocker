@@ -238,7 +238,7 @@ ENV LDFLAGS '-static-libstdc++'
 
 RUN echo "\e[32mcloning: $PROJECT_URL on branch: $BRANCH\e[39m" \
     && git clone --branch "$BRANCH" --single-branch --recursive $PROJECT_URL triton.git > /dev/null \
-    && cd TritonProtocol.git || exit 1 \
+    && cd triton.git || exit 1 \
     # && echo "\e[32mapplying version patch\e[39m" \
     # && git apply --stat ../bulletproofs_1.patch \
     # && git apply --check ../bulletproofs_1.patch \
@@ -255,7 +255,7 @@ RUN echo "\e[32mcloning: $PROJECT_URL on branch: $BRANCH\e[39m" \
     && mv /data$BUILD_PATH/triton-wallet-cli /data/ \
     && chmod +x /data/triton-wallet-cli \
     && cd /data || exit 1 \
-    && rm -rf /data/TritonProtocol.git \
+    && rm -rf /data/triton.git \
     && apt-get purge -yqq \
         ca-certificates \
         g++ \

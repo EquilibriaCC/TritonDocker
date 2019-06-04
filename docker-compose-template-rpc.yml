@@ -1,26 +1,26 @@
 version: '2'
 
 services:
-  monero-rpc:
+  triton-rpc:
     build:
       context: .
       dockerfile: Dockerfile
       args:
         BRANCH: master
-    command: monero-wallet-rpc --testnet --wallet-file wallet --password-file wallet.passwd --disable-rpc-login
+    command: triton-wallet-rpc --testnet --wallet-file wallet --password-file wallet.passwd --disable-rpc-login
     volumes:
-      - <path/to/and/including/wallet_folder>:/monero
+      - <path/to/and/including/wallet_folder>:/triton
     ports:
-      - "28083:28083"
+      - "9234:9234"
     environment:
       - USER_ID=1000
       - LOG_LEVEL=0
       - DAEMON_HOST=<host>
-      - DAEMON_PORT=28081
+      - DAEMON_PORT=9231
       - RPC_USER=""
       - RPC_PASSWD=""
       - RPC_BIND_IP=0.0.0.0
-      - RPC_BIND_PORT=28083
+      - RPC_BIND_PORT=9234
       - USE_TORSOCKS=NO
       - USE_TOR=NO
     logging:

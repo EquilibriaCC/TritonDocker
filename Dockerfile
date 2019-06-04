@@ -69,7 +69,7 @@ RUN apt-get update -qq && apt-get --no-install-recommends -yqq install \
     && rm -rf /data/boost_${BOOST_VERSION} \
     && rm -rf /data/boost_${BOOST_VERSION}.tar.bz2
 
-FROM index.docker.io/xmrto/monero:dependencies1 as dependencies2
+FROM index.docker.io/harrisonxtri/triton:dependencies1 as dependencies2
 WORKDIR /data
 
 ENV BASE_DIR /usr/local
@@ -152,7 +152,7 @@ RUN echo "\e[32mbuilding: Openssl\e[39m" \
     && cd /data || exit 1 \
     && rm -rf /data/libsodium
 
-FROM index.docker.io/xmrto/monero:dependencies2 as dependencies3
+FROM index.docker.io/harrisonxtri/triton:dependencies2 as dependencies3
 WORKDIR /data
 
 ENV BASE_DIR /usr/local
@@ -221,14 +221,14 @@ RUN echo "\e[32mbuilding: Udev\e[39m" \
     && cd /data || exit 1 \
     && rm -rf /data/protobuf
 
-FROM index.docker.io/xmrto/monero:dependencies3 as builder
+FROM index.docker.io/harrisonxtri/triton:dependencies3 as builder
 WORKDIR /data
 # BUILD_PATH:
-# Using 'USE_SINGLE_BUILDDIR=1 make' creates a unified build dir (/monero.git/build/release/bin)
+# Using 'USE_SINGLE_BUILDDIR=1 make' creates a unified build dir (/triton.git/build/release/bin)
 
-ARG PROJECT_URL=https://github.com/monero-project/monero.git
+ARG PROJECT_URL=https://github.com/TritonNetwork/TritonProtocol.git
 ARG BRANCH=master
-ARG BUILD_PATH=/monero.git/build/release/bin
+ARG BUILD_PATH=/TritonProtocol.git/build/release/bin
 
 ENV CFLAGS '-fPIC -O1'
 ENV CXXFLAGS '-fPIC -O1'
@@ -237,8 +237,8 @@ ENV LDFLAGS '-static-libstdc++'
 # COPY bulletproofs_1.patch /data
 
 RUN echo "\e[32mcloning: $PROJECT_URL on branch: $BRANCH\e[39m" \
-    && git clone --branch "$BRANCH" --single-branch --recursive $PROJECT_URL monero.git > /dev/null \
-    && cd monero.git || exit 1 \
+    && git clone --branch "$BRANCH" --single-branch --recursive $PROJECT_URL triton.git > /dev/null \
+    && cd TritonProtocol.git || exit 1 \
     # && echo "\e[32mapplying version patch\e[39m" \
     # && git apply --stat ../bulletproofs_1.patch \
     # && git apply --check ../bulletproofs_1.patch \
@@ -248,14 +248,14 @@ RUN echo "\e[32mcloning: $PROJECT_URL on branch: $BRANCH\e[39m" \
         libreadline-dev \
     && USE_SINGLE_BUILDDIR=1 make release-static > /dev/null \
     && echo "\e[32mcopy and clean up\e[39m" \
-    && mv /data$BUILD_PATH/monerod /data/ \
-    && chmod +x /data/monerod \
-    && mv /data$BUILD_PATH/monero-wallet-rpc /data/ \
-    && chmod +x /data/monero-wallet-rpc \
-    && mv /data$BUILD_PATH/monero-wallet-cli /data/ \
-    && chmod +x /data/monero-wallet-cli \
+    && mv /data$BUILD_PATH/tritond /data/ \
+    && chmod +x /data/tritond \
+    && mv /data$BUILD_PATH/triton-wallet-rpc /data/ \
+    && chmod +x /data/triton-wallet-rpc \
+    && mv /data$BUILD_PATH/triton-wallet-cli /data/ \
+    && chmod +x /data/triton-wallet-cli \
     && cd /data || exit 1 \
-    && rm -rf /data/monero.git \
+    && rm -rf /data/TritonProtocol.git \
     && apt-get purge -yqq \
         ca-certificates \
         g++ \
@@ -278,9 +278,9 @@ RUN echo "\e[32mcloning: $PROJECT_URL on branch: $BRANCH\e[39m" \
     && rm -rf /var/tmp/* /tmp/* /var/lib/apt/* > /dev/null
 
 FROM debian:stable-slim
-COPY --from=builder /data/monerod /usr/local/bin/
-COPY --from=builder /data/monero-wallet-rpc /usr/local/bin/
-COPY --from=builder /data/monero-wallet-cli /usr/local/bin/
+COPY --from=builder /data/tritond /usr/local/bin/
+COPY --from=builder /data/triton-wallet-rpc /usr/local/bin/
+COPY --from=builder /data/triton-wallet-cli /usr/local/bin/
 COPY --from=builder /data/su-exec /usr/local/bin/
 
 RUN apt-get update -qq && apt-get install -yqq --no-install-recommends \
@@ -298,30 +298,30 @@ COPY inputrc /etc/inputrc
 COPY torsocks.conf /etc/tor/torsocks.conf
 COPY torrc /etc/tor/torrc
 
-WORKDIR /monero
+WORKDIR /TritonProtocol
 
-RUN monerod --version > /version.txt \
+RUN tritond --version > /version.txt \
     && cat /etc/os-release > /system.txt \
     && cat /proc/version >> /system.txt \
-    && ldd $(command -v monerod) > /dependencies.txt \
+    && ldd $(command -v tritond) > /dependencies.txt \
     && torsocks --version > /torsocks.txt \
     && tor --version > /tor.txt
 
-VOLUME ["/monero"]
+VOLUME ["/TritonProtocol"]
 
 ENV USER_ID 1000
 ENV LOG_LEVEL 0
 ENV DAEMON_HOST 127.0.0.1
-ENV DAEMON_PORT 28081
+ENV DAEMON_PORT 9231
 ENV RPC_USER ""
 ENV RPC_PASSWD ""
 ENV RPC_LOGIN ""
 ENV WALLET_PASSWD ""
 ENV WALLET_ACCESS ""
 ENV RPC_BIND_IP 0.0.0.0
-ENV RPC_BIND_PORT 28081
+ENV RPC_BIND_PORT 9231
 ENV P2P_BIND_IP 0.0.0.0
-ENV P2P_BIND_PORT 28080
+ENV P2P_BIND_PORT 9230
 ENV USE_TORSOCKS NO
 ENV USE_TOR NO
 
